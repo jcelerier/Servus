@@ -340,15 +340,15 @@ private:
                              AvahiResolverEvent event, const char* name,
                              const char*, const char*,
                              const char* host, const AvahiAddress*,
-                             uint16_t, AvahiStringList *txt,
+                             uint16_t port, AvahiStringList *txt,
                              AvahiLookupResultFlags, void* servus )
     {
-        ((Servus*)servus)->_resolveCB( resolver, event, name, host, txt );
+        ((Servus*)servus)->_resolveCB( resolver, event, name, host, port, txt );
     }
 
     void _resolveCB( AvahiServiceResolver* resolver,
                      const AvahiResolverEvent event, const char* name,
-                     const char* host, AvahiStringList *txt )
+                     const char* host, uint16_t port, AvahiStringList *txt )
     {
         // If browsing through the local interface,
         // consider only the local instances
@@ -378,6 +378,7 @@ private:
             {
                 detail::ValueMap& values = _instanceMap[ name ];
                 values[ "servus_host" ] = host;
+                values[ "servus_port" ] = std::to_string((int)port);
                 for( ; txt; txt = txt->next )
                 {
                     const std::string entry(
