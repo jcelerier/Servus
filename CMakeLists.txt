@@ -39,8 +39,7 @@ else()
   common_find_package(DNSSD)
 endif()
 common_find_package(Boost 1.51 COMPONENTS unit_test_framework regex)
-common_find_package(Qt5Core)
-common_find_package(Qt5Widgets)
+common_find_package(Qt5 5.6 COMPONENTS Core Widgets)
 common_find_package(Threads REQUIRED)
 common_find_package_post()
 
@@ -49,10 +48,3 @@ if(Qt5Core_FOUND)
 endif()
 
 add_subdirectory(servus)
-add_subdirectory(apps)
-add_subdirectory(tests)
-
-include(CPackConfig)
-set(DOXYGEN_EXTRA_INPUT ${PROJECT_SOURCE_DIR}/README.md)
-set(DOXYGEN_MAINPAGE_MD README.md)
-include(DoxygenRule) # must be after all targets

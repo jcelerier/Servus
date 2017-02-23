@@ -54,9 +54,11 @@ if(BOOST_FOUND)
   list(APPEND SERVUS_LINK_LIBRARIES PRIVATE ${Boost_REGEX_LIBRARY})
 endif()
 
+set(SERVUS_LIBRARY_TYPE STATIC)
 set(SERVUS_OMIT_LIBRARY_HEADER ON)
 common_library(Servus)
 
 if(Qt5Core_FOUND)
+  set(SERVUSQT_LIBRARY_TYPE STATIC)
   add_subdirectory(qt)
 endif()
