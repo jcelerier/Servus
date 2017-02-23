@@ -58,6 +58,10 @@ set(SERVUS_LIBRARY_TYPE STATIC)
 set(SERVUS_OMIT_LIBRARY_HEADER ON)
 common_library(Servus)
 
+install(TARGETS Servus
+    EXPORT ossia-targets
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib)
 if(Qt5Core_FOUND)
   set(SERVUSQT_LIBRARY_TYPE STATIC)
   add_subdirectory(qt)
