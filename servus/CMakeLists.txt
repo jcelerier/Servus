@@ -57,9 +57,10 @@ if(Avahi_FOUND)
   list(APPEND SERVUS_COMPILE_DEFINITIONS SERVUS_USE_AVAHI_CLIENT)
 endif()
 
+
 set_target_properties(Servus PROPERTIES INTERFACE_LINK_LIBRARIES "${SERVUS_LINK_LIBRARIES}")
 set_target_properties(Servus PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${SERVUS_COMPILE_DEFINITIONS}")
-
+target_compile_definitions(Servus PRIVATE ${SERVUS_COMPILE_DEFINITIONS})
 if(Qt5Core_FOUND)
   add_library(ServusQt OBJECT qt/itemModel.cpp)
   target_include_directories(ServusQt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
