@@ -21,7 +21,6 @@
 #ifndef SERVUS_UINT128_H
 #define SERVUS_UINT128_H
 
-#include <servus/api.h>
 #include <servus/types.h>
 
 #include <sstream>
@@ -107,7 +106,7 @@ public:
         }
 
     /** Assign an 128 bit value from a std::string. */
-    SERVUS_API uint128_t& operator = ( const std::string& from );
+    uint128_t& operator = ( const std::string& from );
 
     /**
      * @return true if the values are equal, false if not.
@@ -331,7 +330,7 @@ inline uint128_t operator | ( const servus::uint128_t& a,
  *
  * @param string the string to form the uint128_t from.
  */
-SERVUS_API uint128_t make_uint128( const char* string );
+uint128_t make_uint128( const char* string );
 
 /** Create a 128 bit integer based on a string. */
 inline uint128_t make_uint128( const std::string& string )
@@ -341,7 +340,7 @@ inline uint128_t make_uint128( const std::string& string )
  * Construct a new 128 bit integer with a generated universally unique
  * identifier.
  */
-SERVUS_API uint128_t make_UUID();
+uint128_t make_UUID();
 
 }
 

@@ -20,7 +20,6 @@
 #ifndef SERVUS_URI_H
 #define SERVUS_URI_H
 
-#include <servus/api.h>
 #include <servus/types.h>
 
 #include <map>
@@ -63,57 +62,57 @@ public:
     typedef KVMap::const_iterator ConstKVIter;
 
     /** Construct an empty URI. */
-    SERVUS_API URI();
+    URI();
 
     /**
      * @param uri URI string to parse.
      * @throw std::exception for incomplete URIs, and std::invalid_argument
      *        if the port is not a number.
      */
-    SERVUS_API explicit URI( const std::string& uri );
+    explicit URI( const std::string& uri );
 
     /** @overload URI::URI( const std::string& ) */
-    SERVUS_API explicit URI( const char* uri );
+    explicit URI( const char* uri );
 
     /** Copy-construct an URI. */
-    SERVUS_API URI( const URI& from );
+    URI( const URI& from );
 
-    SERVUS_API ~URI();
+    ~URI();
 
     /** Assign the data from another URI. */
-    SERVUS_API URI& operator = ( const URI& rhs );
+    URI& operator = ( const URI& rhs );
 
     /** Equals operator */
-    SERVUS_API bool operator == ( const URI& rhs ) const;
+    bool operator == ( const URI& rhs ) const;
 
     /** Not equals operator */
-    SERVUS_API bool operator != ( const URI& rhs ) const;
+    bool operator != ( const URI& rhs ) const;
 
     /** @name Getters for uri data */
     //@{
-    SERVUS_API const std::string& getScheme() const;
-    SERVUS_API const std::string& getUserinfo() const;
-    SERVUS_API uint16_t getPort() const;
-    SERVUS_API const std::string& getHost() const;
+    const std::string& getScheme() const;
+    const std::string& getUserinfo() const;
+    uint16_t getPort() const;
+    const std::string& getHost() const;
     /** Return the compound authority part of the URI.
 
         User info added only if not empty, port number added only if it's
         different from 0. */
-    SERVUS_API std::string getAuthority() const;
-    SERVUS_API const std::string& getPath() const;
-    SERVUS_API const std::string& getQuery() const;
-    SERVUS_API const std::string& getFragment() const;
+    std::string getAuthority() const;
+    const std::string& getPath() const;
+    const std::string& getQuery() const;
+    const std::string& getFragment() const;
     //@}
 
     /** @name Setters for uri data. */
     //@{
-    SERVUS_API void setScheme( const std::string& scheme );
-    SERVUS_API void setUserInfo( const std::string& userinfo );
-    SERVUS_API void setHost( const std::string& host );
-    SERVUS_API void setPort( uint16_t port );
-    SERVUS_API void setPath( const std::string& path );
-    SERVUS_API void setQuery( const std::string& query );
-    SERVUS_API void setFragment( const std::string& fragment );
+    void setScheme( const std::string& scheme );
+    void setUserInfo( const std::string& userinfo );
+    void setHost( const std::string& host );
+    void setPort( uint16_t port );
+    void setPath( const std::string& path );
+    void setQuery( const std::string& query );
+    void setFragment( const std::string& fragment );
     //@}
 
     /** @name Access to key-value data in query. */
@@ -121,20 +120,20 @@ public:
     /**
      * @return a const iterator to the beginning of the query map.
      */
-    SERVUS_API ConstKVIter queryBegin() const;
+    ConstKVIter queryBegin() const;
 
     /**
      * @return a const iterator to end beginning of the query map.
      */
-    SERVUS_API ConstKVIter queryEnd() const;
+    ConstKVIter queryEnd() const;
 
     /**
      * @return a const iterator to the given key, or queryEnd().
      */
-    SERVUS_API ConstKVIter findQuery( const std::string& key ) const;
+    ConstKVIter findQuery( const std::string& key ) const;
 
     /** Add a key-value pair to the query. */
-    SERVUS_API void addQuery( const std::string& key,
+    void addQuery( const std::string& key,
                               const std::string& value );
     //@}
 

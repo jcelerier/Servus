@@ -21,7 +21,6 @@
 #ifndef SERVUS_TYPES_H
 #define SERVUS_TYPES_H
 
-#include <servus/defines.h>
 #include <sys/types.h>
 #ifndef _MSC_VER
 #  include <stdint.h>

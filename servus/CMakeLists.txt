@@ -54,15 +54,12 @@ if(BOOST_FOUND)
   list(APPEND SERVUS_LINK_LIBRARIES PRIVATE ${Boost_REGEX_LIBRARY})
 endif()
 
-set(SERVUS_LIBRARY_TYPE STATIC)
-set(SERVUS_OMIT_LIBRARY_HEADER ON)
-common_library(Servus)
+add_library(Servus OBJECT ${SERVUS_SOURCES})
+target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set_target_properties(Servus PROPERTIES INTERFACE_LINK_LIBRARIES "${SERVUS_LINK_LIBRARIES}")
 
-install(TARGETS Servus
-    EXPORT ossia-targets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
 if(Qt5Core_FOUND)
-  set(SERVUSQT_LIBRARY_TYPE STATIC)
-  add_subdirectory(qt)
+#  add_library(ServusQt OBJECT qt/itemModel.cpp)
+#  target_include_directories(ServusQt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+#  set_target_properties(ServusQt PROPERTIES INTERFACE_LINK_LIBRARIES Qt5::Core)
 endif()

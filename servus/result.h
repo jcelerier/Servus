@@ -19,7 +19,6 @@
 #ifndef SERVUS_RESULT_H
 #define SERVUS_RESULT_H
 
-#include <servus/api.h>
 #include <servus/types.h>
 
 #include <iostream>

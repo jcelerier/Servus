@@ -20,7 +20,6 @@
 #ifndef SERVUS_SERIALIZABLE_H
 #define SERVUS_SERIALIZABLE_H
 
-#include <servus/api.h>
 #include <servus/types.h>
 
 #include <functional> // function
@@ -33,8 +32,8 @@ namespace servus
 class Serializable
 {
 public:
-    SERVUS_API Serializable();
-    SERVUS_API virtual ~Serializable();
+    Serializable();
+    virtual ~Serializable();
 
     /** @name Serialization methods */
     //@{
@@ -50,7 +49,7 @@ public:
     virtual std::string getTypeName() const = 0;
 
     /** @return the universally unique identifier of this serializable. */
-    SERVUS_API virtual uint128_t getTypeIdentifier() const;
+    virtual uint128_t getTypeIdentifier() const;
 
     /** @return the description of the objects' data layout. */
     virtual std::string getSchema() const { return std::string(); }
@@ -59,8 +58,8 @@ public:
      * Update this serializable from its binary representation.
      * @return true on success, false on error.
      */
-    SERVUS_API bool fromBinary( const Data& data );
-    SERVUS_API bool fromBinary( const void* data, const size_t size );
+    bool fromBinary( const Data& data );
+    bool fromBinary( const void* data, const size_t size );
 
     /**
      * Get a binary representation of this object.
@@ -70,16 +69,16 @@ public:
      *
      * @return the binary representation of this object.
      */
-    SERVUS_API Data toBinary() const;
+    Data toBinary() const;
 
     /**
      * Update this serializable from its JSON representation.
      * @return true on success, false on error.
      */
-    SERVUS_API bool fromJSON( const std::string& json );
+    bool fromJSON( const std::string& json );
 
     /** @return the JSON representation of this serializable. */
-    SERVUS_API std::string toJSON() const;
+    std::string toJSON() const;
     //@}
 
     /** @name Change Notifications */
@@ -97,7 +96,7 @@ public:
      * @throw if a DeserializedCallback is already registered and the specified
      * callback is not 'nullptr' (or 0)
      */
-    SERVUS_API void registerDeserializedCallback( const DeserializedCallback& );
+    void registerDeserializedCallback( const DeserializedCallback& );
 
     /**
      * Register a function to be called when the serializable object is about
@@ -108,15 +107,15 @@ public:
      * @throw if a SerializedCallback is already registered and the specified
      * callback is not 'nullptr' (or 0)
      */
-    SERVUS_API void registerSerializeCallback( const SerializeCallback& );
+    void registerSerializeCallback( const SerializeCallback& );
     //@}
 
 protected:
-    SERVUS_API Serializable( const Serializable& );
-    SERVUS_API Serializable& operator=( const Serializable& );
+    Serializable( const Serializable& );
+    Serializable& operator=( const Serializable& );
 #ifdef SERVUS_USE_CXX11
-    SERVUS_API Serializable( Serializable&& );
-    SERVUS_API Serializable& operator=( Serializable&& );
+    Serializable( Serializable&& );
+    Serializable& operator=( Serializable&& );
 #endif
 
 private:

@@ -20,7 +20,6 @@
 #ifndef SERVUSQT_ITEMMODEL
 #define SERVUSQT_ITEMMODEL
 
-#include <servus/qt/api.h>
 #include <servus/types.h>
 
 #include <memory> // std::unique_ptr

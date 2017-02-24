@@ -17,31 +17,14 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(Servus VERSION 1.5.0)
-set(Servus_VERSION_ABI 5)
-
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/CMake
-                              ${CMAKE_SOURCE_DIR}/CMake/common)
-include(GitExternal)
-
-set(SERVUS_DESCRIPTION
-  "C++ network oriented utilities including a zeroconf implementation")
-set(SERVUS_MAINTAINER "Human Brain Project <HBPVis@googlegroups.com>")
-set(CPACK_PACKAGE_LICENSE LGPL)
-set(COMMON_PROJECT_DOMAIN eu.humanbrainproject)
-set(SERVUS_DEB_DEPENDS libboost-test-dev avahi-daemon libavahi-client-dev)
-
-include(Common)
 
 if(LINUX)
-  common_find_package(avahi-client)
+  find_package(avahi-client)
 else()
-  common_find_package(DNSSD)
+  find_package(DNSSD)
 endif()
-common_find_package(Boost 1.51 COMPONENTS unit_test_framework regex)
-common_find_package(Qt5 5.6 COMPONENTS Core Widgets)
-common_find_package(Threads REQUIRED)
-common_find_package_post()
+find_package(Qt5 5.6 COMPONENTS Core)
+find_package(Threads REQUIRED)
 
 if(Qt5Core_FOUND)
   set(SERVUS_DEPENDENT_LIBRARIES Qt5Core)
