@@ -324,7 +324,7 @@ private:
     static void resolveCBS_( DNSServiceRef, DNSServiceFlags,
                              uint32_t /*interfaceIdx*/,
                              DNSServiceErrorType error,
-                             const char* /*name*/, const char* host,
+                             const char* name, const char* host,
                              uint16_t port,
                              uint16_t txtLen, const unsigned char* txt,
                              Servus* servus )
@@ -338,8 +338,9 @@ private:
                      const unsigned char* txt )
     {
         detail::ValueMap& values = _instanceMap[ _browsedName ];
+
         values[ "servus_host" ] = host;
-        values[ "servus_port" ] = std::to_string((int)port);
+        values[ "servus_port" ] = std::to_string((int) ntohs(port));
 
         char key[256] = {0};
         const char* value = 0;
