@@ -45,9 +45,29 @@ if(MSVC)
   list(APPEND SERVUS_LINK_LIBRARIES ws2_32)
 endif()
 
+if(ANDROID)
+  set(SERVUS_SOURCES ${SERVUS_SOURCES}
+
+    android/dnssd_clientlib.c
+    android/dnssd_clientstub.c
+    android/dnssd_clientshim.c
+    android/dnssd_ipc.c
+  )
+endif()
 add_library(Servus OBJECT ${SERVUS_SOURCES})
 target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-
+if(ANDROID)
+  target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
+  list(APPEND SERVUS_COMPILE_DEFINITIONS
+    SERVUS_USE_DNSSD
+    HAVE_IPV6
+    NOT_HAVE_SA_LEN
+    PLATFORM_NO_RLIMIT
+    MDNS_DEBUGMSGS=0
+    MDNS_UDS_SERVERPATH=\"/dev/socket/mdnsd\"
+    MDNS_USERNAME=\"mdnsr\"
+    )
+endif()
 if(DNSSD_FOUND)
   list(APPEND SERVUS_LINK_LIBRARIES ${DNSSD_LIBRARIES})
   list(APPEND SERVUS_COMPILE_DEFINITIONS SERVUS_USE_DNSSD)

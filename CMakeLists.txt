@@ -18,7 +18,7 @@
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
-if(UNIX AND NOT APPLE)
+if(UNIX AND NOT APPLE AND NOT ANDROID)
   find_package(Avahi)
 else()
   find_package(DNSSD)
