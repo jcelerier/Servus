@@ -24,7 +24,6 @@
 #include <servus/types.h>
 
 #include <map>
-
 namespace servus
 {
 namespace detail { class Servus; }
@@ -38,8 +37,8 @@ namespace detail { class Servus; }
  * zeroconf support (@sa isAvailable()), this class does not do anything useful.
  *
  * Example: @include tests/servus.cpp
- */
-class Servus
+ */ 
+class SERVUS_EXPORT Servus
 {
 public:
     enum Interface
@@ -55,7 +54,7 @@ public:
      * The result code is either one of kDNSServiceErr_ or one of static
      * constants defined by this class
      */
-    class Result : public servus::Result
+    class SERVUS_EXPORT Result : public servus::Result
     {
     public:
         explicit Result( const int32_t code ) : servus::Result( code ){}

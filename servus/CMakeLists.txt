@@ -16,6 +16,8 @@
 # along with this library; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include(GenerateExportHeader)
 set(SERVUS_PUBLIC_HEADERS
   listener.h
   result.h
@@ -33,6 +35,8 @@ set(SERVUS_HEADERS
   )
 
 set(SERVUS_SOURCES
+  ${SERVUS_PUBLIC_HEADERS}
+  ${SERVUS_HEADERS}
   md5/md5.cc
   serializable.cpp
   servus.cpp
@@ -54,8 +58,12 @@ if(ANDROID)
     android/dnssd_ipc.c
   )
 endif()
+add_library(Servus_iface INTERFACE)
 add_library(Servus OBJECT ${SERVUS_SOURCES})
-target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+generate_export_header(Servus BASE_NAME SERVUS)
+target_compile_definitions(Servus PRIVATE Servus_EXPORTS)
+target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+target_include_directories(Servus_iface INTERFACE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if(ANDROID)
   target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
   list(APPEND SERVUS_COMPILE_DEFINITIONS

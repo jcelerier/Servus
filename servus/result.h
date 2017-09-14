@@ -20,6 +20,7 @@
 #define SERVUS_RESULT_H
 
 #include <servus/types.h>
+#include <servus_export.h>
 
 #include <iostream>
 
@@ -27,7 +28,7 @@ namespace servus
 {
 
 /** A result returns an error code and behaves like a boolean. */
-class Result
+class SERVUS_EXPORT Result
 {
     typedef void (Result::*bool_t)() const;
     void bool_true() const {}
