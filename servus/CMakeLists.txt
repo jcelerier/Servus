@@ -67,29 +67,24 @@ target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CUR
 target_include_directories(Servus_iface INTERFACE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if(ANDROID)
   target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
-  list(APPEND SERVUS_COMPILE_DEFINITIONS
-    SERVUS_USE_DNSSD
-    HAVE_IPV6
-    NOT_HAVE_SA_LEN
-    PLATFORM_NO_RLIMIT
-    MDNS_DEBUGMSGS=0
-    MDNS_UDS_SERVERPATH=\"/dev/socket/mdnsd\"
-    MDNS_USERNAME=\"mdnsr\"
-    )
+  target_compile_definitions(Servus PUBLIC SERVUS_USE_DNSSD
+      HAVE_IPV6
+      NOT_HAVE_SA_LEN
+      PLATFORM_NO_RLIMIT
+      MDNS_DEBUGMSGS=0
+      MDNS_UDS_SERVERPATH=\"/dev/socket/mdnsd\"
+      MDNS_USERNAME=\"mdnsr\")
 endif()
 if(DNSSD_FOUND)
-  list(APPEND SERVUS_LINK_LIBRARIES ${DNSSD_LIBRARIES})
-  list(APPEND SERVUS_COMPILE_DEFINITIONS SERVUS_USE_DNSSD)
+  target_link_libraries(Servus PUBLIC ${DNSSD_LIBRARIES})
+  target_compile_definitions(Servus PUBLIC SERVUS_USE_DNSSD)
 endif()
 if(Avahi_FOUND)
-  list(APPEND SERVUS_LINK_LIBRARIES ${Avahi_LIBRARIES})
-  list(APPEND SERVUS_COMPILE_DEFINITIONS SERVUS_USE_AVAHI_CLIENT)
+  target_link_libraries(Servus PUBLIC ${Avahi_LIBRARIES})
+  target_compile_definitions(Servus PUBLIC SERVUS_USE_AVAHI_CLIENT)
 endif()
 
 
-set_target_properties(Servus PROPERTIES INTERFACE_LINK_LIBRARIES "${SERVUS_LINK_LIBRARIES}")
-set_target_properties(Servus PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${SERVUS_COMPILE_DEFINITIONS}")
-target_compile_definitions(Servus PRIVATE ${SERVUS_COMPILE_DEFINITIONS})
 if(Qt5Core_FOUND)
   add_library(ServusQt qt/itemModel.cpp)
   target_include_directories(ServusQt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
