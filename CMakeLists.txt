@@ -16,7 +16,8 @@
 # along with this library; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+cmake_policy(VERSION 3.7)
 if(UNIX AND NOT APPLE AND NOT ANDROID)
   find_package(Avahi)
 else()
