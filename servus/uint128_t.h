@@ -47,10 +47,15 @@ std::ostream& operator << ( std::ostream& os, const uint128_t& id );
 class uint128_t
 {
 public:
+    uint128_t() = default;
+    uint128_t(const uint128_t&) = default;
+    uint128_t(uint128_t&&) = default;
+    uint128_t& operator=(const uint128_t&) = default;
+    uint128_t& operator=(uint128_t&&) = default;
     /**
      * Construct a new 128 bit integer with a default value.
      */
-    explicit uint128_t( const unsigned long long low_ = 0 )
+    explicit uint128_t( const unsigned long long low_ )
         : _high( 0 ), _low( low_ ) {}
 
     /**
@@ -80,14 +85,6 @@ public:
      *         identifier.
      */
     bool isUUID() const { return high() != 0; }
-
-    /** Assign another 128 bit value. */
-    uint128_t& operator = ( const servus::uint128_t& rhs )
-        {
-            _high = rhs._high;
-            _low = rhs._low;
-            return *this;
-        }
 
     /** Assign another 64 bit value. */
     uint128_t& operator = ( const uint64_t rhs )
@@ -251,8 +248,8 @@ public:
     }
 
 private:
-    uint64_t _high;
-    uint64_t _low;
+    uint64_t _high{};
+    uint64_t _low{};
 };
 
 /** ostream operator for 128 bit unsigned integers. */
