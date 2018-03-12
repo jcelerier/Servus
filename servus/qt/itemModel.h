@@ -42,7 +42,7 @@ namespace qt
  *
  * @version 1.2
  */
-class ItemModel : public QAbstractItemModel
+class ItemModel final : public QAbstractItemModel
 {
 public:
     /**
