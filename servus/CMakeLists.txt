@@ -21,11 +21,9 @@ include(GenerateExportHeader)
 set(SERVUS_PUBLIC_HEADERS
   listener.h
   result.h
-  serializable.h
   servus.h
+  servus_impl.h
   types.h
-  uint128_t.h
-  uri.h
   )
 
 set(SERVUS_HEADERS
@@ -37,11 +35,6 @@ set(SERVUS_HEADERS
 set(SERVUS_SOURCES
   ${SERVUS_PUBLIC_HEADERS}
   ${SERVUS_HEADERS}
-  md5/md5.cc
-  serializable.cpp
-  servus.cpp
-  uint128_t.cpp
-  uri.cpp
   )
 
 list(APPEND SERVUS_LINK_LIBRARIES PRIVATE ${CMAKE_THREAD_LIBS_INIT})
@@ -60,19 +53,11 @@ if(ANDROID)
 endif()
 set(BUILD_SHARED_LIBS OFF)
 add_library(Servus_iface INTERFACE)
-add_library(Servus ${SERVUS_SOURCES})
-generate_export_header(Servus BASE_NAME SERVUS)
-target_compile_definitions(Servus PRIVATE Servus_EXPORTS)
-target_include_directories(Servus PUBLIC 
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-  $<INSTALL_INTERFACE:include>
-)
 
 target_include_directories(Servus_iface INTERFACE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
 if(ANDROID)
-  target_include_directories(Servus PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
-  target_compile_definitions(Servus PUBLIC SERVUS_USE_DNSSD
+  target_include_directories(Servus_iface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
+  target_compile_definitions(Servus_iface PUBLIC SERVUS_USE_DNSSD
       HAVE_IPV6
       NOT_HAVE_SA_LEN
       PLATFORM_NO_RLIMIT
@@ -81,23 +66,11 @@ if(ANDROID)
       MDNS_USERNAME=\"mdnsr\")
 endif()
 if(DNSSD_FOUND)
-  target_link_libraries(Servus PUBLIC ${DNSSD_LIBRARIES})
-  target_compile_definitions(Servus PUBLIC SERVUS_USE_DNSSD)
+  target_link_libraries(Servus_iface INTERFACE ${DNSSD_LIBRARIES})
+  target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_DNSSD)
 endif()
 if(Avahi_FOUND)
-  target_link_libraries(Servus PUBLIC ${Avahi_LIBRARIES})
-  target_compile_definitions(Servus PUBLIC SERVUS_USE_AVAHI_CLIENT)
+  target_link_libraries(Servus_iface INTERFACE ${Avahi_LIBRARIES})
+  target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_AVAHI_CLIENT)
 endif()
 
-install(TARGETS Servus
-    EXPORT ossia-targets
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib/static
-    RUNTIME DESTINATION bin
-    INCLUDES DESTINATION include)
-
-if(Qt5Core_FOUND)
-  add_library(ServusQt qt/itemModel.cpp)
-  target_include_directories(ServusQt PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..)
-  target_link_libraries(ServusQt Qt5::Core)
-endif()

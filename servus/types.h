@@ -45,6 +45,7 @@ typedef SSIZE_T ssize_t;
 
 #include <vector>
 #include <string>
+#include <map>
 
 namespace servus
 {
@@ -57,6 +58,17 @@ class uint128_t;
 
 typedef unsigned long long ull_t;
 typedef std::vector< std::string > Strings;
+
+enum Interface
+{
+    IF_ALL = 0, //!< use all interfaces
+    // (uint32_t) -1 == kDNSServiceInterfaceIndexLocalOnly
+    IF_LOCAL = (unsigned)(-1) //!< only local interfaces
+};
+
+/** @internal */
+typedef std::map< std::string, std::map< std::string, std::string > > Data;
+
 }
 
 #endif

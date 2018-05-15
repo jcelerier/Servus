@@ -18,6 +18,7 @@
 
 cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 cmake_policy(VERSION 3.7)
+project(Servus CXX)
 if(UNIX AND NOT APPLE AND NOT ANDROID)
   find_package(Avahi)
 else()

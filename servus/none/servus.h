@@ -20,45 +20,45 @@ namespace servus
 {
 namespace none
 {
-class Servus : public detail::Servus
+class Servus final : public detail::Servus
 {
 public:
     explicit Servus( const std::string& name ) : detail::Servus( name ) {}
-    virtual ~Servus() {}
+    ~Servus() override {}
 
-    std::string getClassName() const { return "none"; }
+    std::string getClassName() const override { return "none"; }
 
-    servus::Servus::Result announce( const unsigned short,
-                                       const std::string& ) final
+    servus::Result announce( const unsigned short,
+                                       const std::string& ) final override
     {
-        return servus::Servus::Result(
-            servus::Servus::Result::NOT_SUPPORTED );
+        return servus::Result(
+            servus::Result::NOT_SUPPORTED );
     }
 
-    void withdraw() final {}
-    bool isAnnounced() const final { return false; }
+    void withdraw() final override {}
+    bool isAnnounced() const final override { return false; }
 
-    servus::Servus::Result beginBrowsing(
-        const servus::Servus::Interface ) final
+    servus::Result beginBrowsing(
+        const servus::Interface ) final override
     {
-        return servus::Servus::Result(
-            servus::Servus::Result::NOT_SUPPORTED );
+        return servus::Result(
+            servus::Result::NOT_SUPPORTED );
     }
 
-    servus::Servus::Result browse( const int32_t ) final
+    servus::Result browse( const int32_t ) final override
     {
-        return servus::Servus::Result(
-            servus::Servus::Result::NOT_SUPPORTED );
+        return servus::Result(
+            servus::Result::NOT_SUPPORTED );
     }
 
-    void endBrowsing() final {}
-    bool isBrowsing() const final { return false; }
-    Strings discover( const servus::Servus::Interface, const unsigned ) final
+    void endBrowsing() final override {}
+    bool isBrowsing() const final override { return false; }
+    Strings discover( const servus::Interface, const unsigned ) final override
     {
         return getInstances();
     }
 
-    void _updateRecord() final {}
+    void _updateRecord() final override {}
 };
 }
 }

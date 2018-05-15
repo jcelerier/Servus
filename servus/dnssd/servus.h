@@ -39,7 +39,7 @@ public:
         : detail::Servus( name )
         , _out( 0 )
         , _in( 0 )
-        , _result( servus::Servus::Result::PENDING )
+        , _result( servus::Result::PENDING )
     {}
 
     virtual ~Servus()
@@ -50,16 +50,16 @@ public:
 
     std::string getClassName() const { return "dnssd"; }
 
-    servus::Servus::Result announce( const unsigned short port,
+    servus::Result announce( const unsigned short port,
                                      const std::string& instance ) final
     {
         if( _out )
-            return servus::Servus::Result( servus::Servus::Result::PENDING );
+            return servus::Result( servus::Result::PENDING );
 
         TXTRecordRef record;
         _createTXTRecord( record );
 
-        const servus::Servus::Result result(
+        const servus::Result result(
             DNSServiceRegister( &_out, 0 /* flags */,
                                 0 /* all interfaces */,
                                 instance.empty() ? 0 : instance.c_str(),
@@ -92,17 +92,17 @@ public:
         return _out != 0;
     }
 
-    servus::Servus::Result beginBrowsing(
-        const ::servus::Servus::Interface addr ) final
+    servus::Result beginBrowsing(
+        const ::servus::Interface addr ) final
     {
         if( _in )
-            return servus::Servus::Result( servus::Servus::Result::PENDING );
+            return servus::Result( servus::Result::PENDING );
 
         _instanceMap.clear();
         return _browse( addr );
     }
 
-    servus::Servus::Result browse( const int32_t timeout ) final
+    servus::Result browse( const int32_t timeout ) final
     {
         return _handleEvents( _in, timeout );
     }
@@ -121,10 +121,10 @@ public:
         return _in != 0;
     }
 
-    Strings discover( const ::servus::Servus::Interface addr,
+    Strings discover( const ::servus::Interface addr,
                       const unsigned browseTime ) final
     {
-        const servus::Servus::Result& result = beginBrowsing( addr );
+        const servus::Result& result = beginBrowsing( addr );
         if( !result && result != kDNSServiceErr_AlreadyRegistered )
             return getInstances();
 
@@ -142,7 +142,7 @@ private:
     std::string _browsedName;
 
 
-    servus::Servus::Result _browse( const ::servus::Servus::Interface addr )
+    servus::Result _browse( const ::servus::Interface addr )
     {
         assert( !_in );
         const DNSServiceErrorType error =
@@ -155,7 +155,7 @@ private:
                  << " on " << addr << std::endl;
             endBrowsing();
         }
-        return servus::Servus::Result( error );
+        return servus::Result( error );
     }
 
     void _updateRecord() final
@@ -188,21 +188,21 @@ private:
         }
     }
 
-    servus::Servus::Result _handleEvents( DNSServiceRef service,
+    servus::Result _handleEvents( DNSServiceRef service,
                                           const int32_t timeout = -1 )
     {
         assert( service );
         if( !service )
-            return servus::Servus::Result( kDNSServiceErr_Unknown );
+            return servus::Result( kDNSServiceErr_Unknown );
 
         const int fd = DNSServiceRefSockFD( service );
         const int nfds = fd + 1;
 
         assert( fd >= 0 );
         if( fd < 0 )
-            return servus::Servus::Result( kDNSServiceErr_BadParam );
+            return servus::Result( kDNSServiceErr_BadParam );
 
-        while( _result == servus::Servus::Result::PENDING )
+        while( _result == servus::Result::PENDING )
         {
             fd_set fdSet;
             FD_ZERO( &fdSet );
@@ -248,8 +248,8 @@ private:
             }
         }
 
-        const servus::Servus::Result result( _result );
-        _result = servus::Servus::Result::PENDING; // reset for next operation
+        const servus::Result result( _result );
+        _result = servus::Result::PENDING; // reset for next operation
         return result;
     }
 

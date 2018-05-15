@@ -20,7 +20,6 @@
 #define SERVUS_RESULT_H
 
 #include <servus/types.h>
-#include <servus_export.h>
 
 #include <iostream>
 
@@ -28,19 +27,25 @@ namespace servus
 {
 
 /** A result returns an error code and behaves like a boolean. */
-class SERVUS_EXPORT Result
+class Result
 {
     typedef void (Result::*bool_t)() const;
     void bool_true() const {}
 
 public:
     static const int32_t SUCCESS = 0;
+    /** operation did not complete. */
+    static const int32_t PENDING = -1;
+    /** Servus compiled without ZeroConf support. */
+    static const int32_t NOT_SUPPORTED = -2;
+    /** Error during polling for event. */
+    static const int32_t POLL_ERROR = -3;
 
     /** Construct a new result. */
     explicit Result( const int32_t code ) : code_( code ){}
 
     /** Destruct the result. */
-    virtual ~Result(){}
+    ~Result(){}
 
     /** @return true if no error occured, false otherwise. */
     operator bool_t() const { return code_ == SUCCESS ? &Result::bool_true : 0;}
@@ -58,9 +63,7 @@ public:
     int32_t getCode() const { return code_; }
 
     /** @return the result string. */
-    virtual std::string getString() const
-        { return code_ == SUCCESS ? "success" : "result"; }
-
+    std::string getString() const;
 protected:
     int32_t code_;
 };
