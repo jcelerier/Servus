@@ -53,8 +53,9 @@ if(ANDROID)
 endif()
 set(BUILD_SHARED_LIBS OFF)
 add_library(Servus_iface INTERFACE)
-
-target_include_directories(Servus_iface INTERFACE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/..)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+target_include_directories(Servus_iface INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 if(ANDROID)
   target_include_directories(Servus_iface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
   target_compile_definitions(Servus_iface PUBLIC SERVUS_USE_DNSSD
@@ -74,3 +75,5 @@ if(Avahi_FOUND)
   target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_AVAHI_CLIENT)
 endif()
 
+export(TARGETS Servus_iface FILE servus-exports.cmake)
+install(TARGETS Servus_iface EXPORT ossia-targets)
