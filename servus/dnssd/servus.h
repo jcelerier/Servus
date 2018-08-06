@@ -339,6 +339,7 @@ private:
     {
         detail::ValueMap& values = _instanceMap[ _browsedName ];
 
+        // TODO resolve the ip
         values[ "servus_host" ] = host;
         values[ "servus_port" ] = std::to_string((int) ntohs(port));
 

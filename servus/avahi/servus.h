@@ -24,6 +24,7 @@
 #include <avahi-common/simple-watch.h>
 
 #include <net/if.h>
+#include <arpa/inet.h>
 #include <stdexcept>
 
 #include <cassert>
@@ -345,16 +346,16 @@ private:
                            AvahiIfIndex, AvahiProtocol,
                            AvahiResolverEvent event, const char* name,
                            const char*, const char*,
-                           const char* host, const AvahiAddress*,
+                           const char* host, const AvahiAddress* addr,
                            uint16_t port, AvahiStringList *txt,
                            AvahiLookupResultFlags flags, void* servus )
   {
-    ((Servus*)servus)->_resolveCB( resolver, event, name, host, port, txt, flags );
+    ((Servus*)servus)->_resolveCB( resolver, event, name, host, addr, port, txt, flags );
   }
 
   void _resolveCB( AvahiServiceResolver* resolver,
                    const AvahiResolverEvent event, const char* name,
-                   const char* host, uint16_t port, AvahiStringList *txt,
+                   const char* host, const AvahiAddress* addr, uint16_t port, AvahiStringList *txt,
                    const AvahiLookupResultFlags flags)
   {
     // If browsing through the local interface,
@@ -374,6 +375,25 @@ private:
       case AVAHI_RESOLVER_FOUND:
       {
         detail::ValueMap& values = _instanceMap[ name ];
+        if(addr->proto == AVAHI_PROTO_INET)
+        {
+          values[ "servus_proto" ] = "ipv4";
+
+          struct in_addr ip_addr;
+          ip_addr.s_addr = addr->data.ipv4.address;
+          values[ "servus_ip" ] = inet_ntoa(ip_addr);
+        }
+        else if(addr->proto == AVAHI_PROTO_INET6)
+        {
+          values[ "servus_proto" ] = "ipv6";
+          /*
+          values[ "servus_ip" ] = addr->data.ipv6.address;
+          struct in_addr ip_addr;
+          ip_addr.s_addr = addr->data.ipv6.address;
+          values[ "servus_ip" ] = inet_ntop(addr);
+          */
+        }
+
         values[ "servus_host" ] = host;
         values[ "servus_port" ] = std::to_string((int)port);
         for( ; txt; txt = txt->next )
