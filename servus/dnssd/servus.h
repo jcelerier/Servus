@@ -253,7 +253,7 @@ private:
         return result;
     }
 
-    static void registerCBS_( DNSServiceRef, DNSServiceFlags,
+    static void DNSSD_API registerCBS_( DNSServiceRef, DNSServiceFlags,
                               DNSServiceErrorType error, const char* name,
                               const char* type, const char* domain,
                               Servus* servus )
@@ -277,7 +277,7 @@ private:
         _result = error;
     }
 
-    static void _browseCBS( DNSServiceRef, DNSServiceFlags flags,
+    static void DNSSD_API _browseCBS( DNSServiceRef, DNSServiceFlags flags,
                             uint32_t interfaceIdx, DNSServiceErrorType error,
                             const char* name, const char* type,
                             const char* domain, Servus* servus )
@@ -321,7 +321,7 @@ private:
         }
     }
 
-    static void resolveCBS_( DNSServiceRef, DNSServiceFlags,
+    static void DNSSD_API resolveCBS_( DNSServiceRef, DNSServiceFlags,
                              uint32_t /*interfaceIdx*/,
                              DNSServiceErrorType error,
                              const char* name, const char* host,
