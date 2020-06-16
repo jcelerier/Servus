@@ -191,7 +191,6 @@ private:
     servus::Result _handleEvents( DNSServiceRef service,
                                           const int32_t timeout = -1 )
     {
-        assert( service );
         if( !service )
             return servus::Result( kDNSServiceErr_Unknown );
 
