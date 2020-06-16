@@ -66,10 +66,15 @@ if(ANDROID)
       MDNS_UDS_SERVERPATH=\"/dev/socket/mdnsd\"
       MDNS_USERNAME=\"mdnsr\")
 endif()
-if(DNSSD_FOUND)
+
+if(TARGET DNSSD::dnssd-static)
+  target_link_libraries(Servus_iface INTERFACE DNSSD::dnssd-static)
+  target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_DNSSD)
+elseif(DNSSD_FOUND)
   target_link_libraries(Servus_iface INTERFACE ${DNSSD_LIBRARIES})
   target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_DNSSD)
 endif()
+
 if(Avahi_FOUND)
   target_include_directories(Servus_iface INTERFACE ${Avahi_CLIENT_INCLUDE_DIRS})
   target_link_libraries(Servus_iface INTERFACE ${Avahi_LIBRARIES})

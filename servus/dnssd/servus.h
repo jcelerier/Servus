@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #  include <arpa/inet.h>
 #  include <sys/time.h>
 #  include <unistd.h>
