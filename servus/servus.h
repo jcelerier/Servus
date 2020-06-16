@@ -310,7 +310,7 @@ std::string Result::getString() const
   default:
     if( code > 0 )
       return ::strerror( code );
-    return servus::Result::getString();
+    return "Unknown error";
   }
 }
 
