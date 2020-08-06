@@ -42,29 +42,44 @@ if(MSVC)
   list(APPEND SERVUS_LINK_LIBRARIES ws2_32)
 endif()
 
-if(ANDROID)
-  set(SERVUS_SOURCES ${SERVUS_SOURCES}
-
-    android/dnssd_clientlib.c
-    android/dnssd_clientstub.c
-    android/dnssd_clientshim.c
-    android/dnssd_ipc.c
-  )
-endif()
 set(BUILD_SHARED_LIBS OFF)
 add_library(Servus_iface INTERFACE)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 target_include_directories(Servus_iface INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
 if(ANDROID)
-  target_include_directories(Servus_iface PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/android)
-  target_compile_definitions(Servus_iface PUBLIC SERVUS_USE_DNSSD
+  target_include_directories(Servus_iface INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/android>)
+  target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_DNSSD
       HAVE_IPV6
       NOT_HAVE_SA_LEN
       PLATFORM_NO_RLIMIT
       MDNS_DEBUGMSGS=0
       MDNS_UDS_SERVERPATH=\"/dev/socket/mdnsd\"
       MDNS_USERNAME=\"mdnsr\")
+
+  add_library(dnssd_android STATIC
+    android/dnssd_clientlib.c
+    android/dnssd_clientstub.c
+    android/dnssd_clientshim.c
+    android/dnssd_ipc.c
+  )
+  target_include_directories(dnssd_android
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/android>
+  )
+  target_compile_definitions(dnssd_android
+    PUBLIC
+      HAVE_IPV6
+      NOT_HAVE_SA_LEN
+      PLATFORM_NO_RLIMIT
+      MDNS_DEBUGMSGS=0
+      MDNS_UDS_SERVERPATH=\"/dev/socket/mdnsd\"
+      MDNS_USERNAME=\"mdnsr\"
+  )
+  target_link_libraries(Servus_iface INTERFACE dnssd_android)
+
+  export(TARGETS dnssd_android FILE servus-exports.cmake)
+  install(TARGETS dnssd_android EXPORT ossia-targets)
 endif()
 
 if(TARGET DNSSD::dnssd-static)
