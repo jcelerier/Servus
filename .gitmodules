@@ -1,0 +1,3 @@
+[submodule "3rdparty/dnssd"]
+	path = 3rdparty/dnssd
+	url = https://github.com/jcelerier/dnssd
