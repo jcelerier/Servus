@@ -30,6 +30,7 @@
 #include <cassert>
 #include <mutex>
 
+#include <dlfcn.h>
 using ScopedLock = std::unique_lock< std::mutex >;
 namespace chrono = std::chrono;
 
@@ -57,15 +58,152 @@ namespace avahi
 {
 namespace
 {
+
+class dylib_loader
+{
+public:
+  explicit dylib_loader(const char* const so)
+  {
+    impl = dlopen(so, RTLD_LAZY | RTLD_LOCAL | RTLD_NODELETE);
+  }
+
+  dylib_loader(const dylib_loader&) noexcept = delete;
+  dylib_loader& operator=(const dylib_loader&) noexcept = delete;
+  dylib_loader(dylib_loader&& other)
+  {
+    impl = other.impl;
+    other.impl = nullptr;
+  }
+
+  dylib_loader& operator=(dylib_loader&& other) noexcept
+  {
+    impl = other.impl;
+    other.impl = nullptr;
+    return *this;
+  }
+
+  ~dylib_loader()
+  {
+    if (impl)
+    {
+      dlclose(impl);
+    }
+  }
+
+  template <typename T>
+  T symbol(const char* const sym) const noexcept
+  {
+    return (T)dlsym(impl, sym);
+  }
+
+  operator bool() const { return bool(impl); }
+
+private:
+  void* impl{};
+};
+
+class libavahi
+{
+public:
+  decltype(&::avahi_strerror) strerror{};
+
+  decltype(&::avahi_simple_poll_new) simple_poll_new{};
+  decltype(&::avahi_simple_poll_get) simple_poll_get{};
+  decltype(&::avahi_simple_poll_quit) simple_poll_quit{};
+  decltype(&::avahi_simple_poll_free) simple_poll_free{};
+  decltype(&::avahi_simple_poll_iterate) simple_poll_iterate{};
+
+  decltype(&::avahi_client_new) client_new{};
+  decltype(&::avahi_client_free) client_free{};
+  decltype(&::avahi_client_errno) client_errno{};
+
+  decltype(&::avahi_entry_group_new) entry_group_new{};
+  decltype(&::avahi_entry_group_reset) entry_group_reset{};
+  decltype(&::avahi_entry_group_is_empty) entry_group_is_empty{};
+  decltype(&::avahi_entry_group_commit) entry_group_commit{};
+  decltype(&::avahi_entry_group_add_service_strlst) entry_group_add_service_strlst{};
+
+  decltype(&::avahi_service_browser_new) service_browser_new{};
+  decltype(&::avahi_service_browser_free) service_browser_free{};
+
+  decltype(&::avahi_service_resolver_new) service_resolver_new{};
+  decltype(&::avahi_service_resolver_free) service_resolver_free{};
+
+  decltype(&::avahi_string_list_add_pair) string_list_add_pair{};
+  decltype(&::avahi_string_list_free) string_list_free{};
+
+  static const libavahi& instance() {
+    static const libavahi self;
+    return self;
+  }
+
+private:
+  dylib_loader library;
+
+  libavahi()
+    : library("libavahi-client.so")
+  {
+    strerror = library.symbol<decltype(&::avahi_strerror)>("avahi_strerror");
+
+    simple_poll_new = library.symbol<decltype(&::avahi_simple_poll_new)>("avahi_simple_poll_new");
+    simple_poll_get = library.symbol<decltype(&::avahi_simple_poll_get)>("avahi_simple_poll_get");
+    simple_poll_quit = library.symbol<decltype(&::avahi_simple_poll_quit)>("avahi_simple_poll_quit");
+    simple_poll_free = library.symbol<decltype(&::avahi_simple_poll_free)>("avahi_simple_poll_free");
+    simple_poll_iterate = library.symbol<decltype(&::avahi_simple_poll_iterate)>("avahi_simple_poll_iterate");
+
+    client_new = library.symbol<decltype(&::avahi_client_new)>("avahi_client_new");
+    client_free = library.symbol<decltype(&::avahi_client_free)>("avahi_client_free");
+    client_errno = library.symbol<decltype(&::avahi_client_errno)>("avahi_client_errno");
+
+    entry_group_new = library.symbol<decltype(&::avahi_entry_group_new)>("avahi_entry_group_new");
+    entry_group_reset = library.symbol<decltype(&::avahi_entry_group_reset)>("avahi_entry_group_reset");
+    entry_group_is_empty = library.symbol<decltype(&::avahi_entry_group_is_empty)>("avahi_entry_group_is_empty");
+    entry_group_commit = library.symbol<decltype(&::avahi_entry_group_commit)>("avahi_entry_group_commit");
+    entry_group_add_service_strlst = library.symbol<decltype(&::avahi_entry_group_add_service_strlst)>("avahi_entry_group_add_service_strlst");
+
+    service_browser_new = library.symbol<decltype(&::avahi_service_browser_new)>("avahi_service_browser_new");
+    service_browser_free = library.symbol<decltype(&::avahi_service_browser_free)>("avahi_service_browser_free");
+
+    service_resolver_new = library.symbol<decltype(&::avahi_service_resolver_new)>("avahi_service_resolver_new");
+    service_resolver_free = library.symbol<decltype(&::avahi_service_resolver_free)>("avahi_service_resolver_free");
+
+    string_list_add_pair = library.symbol<decltype(&::avahi_string_list_add_pair)>("avahi_string_list_add_pair");
+    string_list_free = library.symbol<decltype(&::avahi_string_list_free)>("avahi_string_list_free");
+
+    assert(simple_poll_new);
+    assert(client_new);
+    assert(simple_poll_get);
+    assert(strerror);
+    assert(client_free);
+    assert(simple_poll_free);
+    assert(simple_poll_iterate);
+    assert(entry_group_reset);
+    assert(entry_group_is_empty);
+    assert(service_browser_new);
+    assert(client_errno);
+    assert(service_browser_free);
+    assert(simple_poll_quit);
+    assert(service_resolver_new);
+    assert(service_resolver_free);
+    assert(entry_group_new);
+    assert(string_list_add_pair);
+    assert(entry_group_add_service_strlst);
+    assert(string_list_free);
+    assert(entry_group_commit);
+  }
+};
+
+
 AvahiSimplePoll* _newSimplePoll()
 {
   ScopedLock lock( _mutex );
-  return avahi_simple_poll_new();
+  return libavahi::instance().simple_poll_new();
 }
 }
 
 class Servus final : public detail::Servus
 {
+  const libavahi& avahi = libavahi::instance();
 public:
   explicit Servus( const std::string& name )
     : detail::Servus( name )
@@ -83,13 +221,13 @@ public:
 
     int error = 0;
     ScopedLock lock( _mutex );
-    _client = avahi_client_new( avahi_simple_poll_get( _poll ),
+    _client = avahi.client_new( avahi.simple_poll_get( _poll ),
                                 (AvahiClientFlags)(0), _clientCBS, this,
                                 &error );
     if( !_client )
       throw std::runtime_error(
           std::string( "Can't setup avahi client: " ) +
-          avahi_strerror( error ));
+          avahi.strerror( error ));
   }
 
   virtual ~Servus()
@@ -99,9 +237,9 @@ public:
 
     ScopedLock lock( _mutex );
     if( _client )
-      avahi_client_free( _client );
+      avahi.client_free( _client );
     if( _poll )
-      avahi_simple_poll_free( _poll );
+      avahi.simple_poll_free( _poll );
   }
 
   std::string getClassName() const override { return "avahi"; }
@@ -129,7 +267,7 @@ public:
              _result == servus::Result::PENDING &&
              _elapsedMilliseconds( startTime ) < ANNOUNCE_TIMEOUT )
       {
-        avahi_simple_poll_iterate( _poll, ANNOUNCE_TIMEOUT );
+        avahi.simple_poll_iterate( _poll, ANNOUNCE_TIMEOUT );
       }
     }
 
@@ -142,13 +280,13 @@ public:
     _announce.clear();
     _port = 0;
     if( _group )
-      avahi_entry_group_reset( _group );
+      avahi.entry_group_reset( _group );
   }
 
   bool isAnnounced() const final override
   {
     ScopedLock lock( _mutex );
-    return ( _group && !avahi_entry_group_is_empty( _group ));
+    return ( _group && !avahi.entry_group_is_empty( _group ));
   }
 
   servus::Result beginBrowsing(
@@ -161,16 +299,16 @@ public:
     _scope = addr;
     _instanceMap.clear();
     _result = servus::Result::SUCCESS;
-    _browser = avahi_service_browser_new( _client, AVAHI_IF_UNSPEC,
+    _browser = avahi.service_browser_new( _client, AVAHI_IF_UNSPEC,
                                           AVAHI_PROTO_UNSPEC, _name.c_str(),
                                           0, (AvahiLookupFlags)(0),
                                           _browseCBS, this );
     if( _browser )
       return servus::Result( _result );
 
-    _result = avahi_client_errno( _client );
+    _result = avahi.client_errno( _client );
     WARN << "Failed to create browser for " << _name << ": "
-         << avahi_strerror( _result ) << std::endl;
+         << avahi.strerror( _result ) << std::endl;
     return servus::Result( _result );
   }
 
@@ -184,7 +322,7 @@ public:
     size_t nErrors = 0;
     do
     {
-      if( avahi_simple_poll_iterate( _poll, timeout ) != 0 )
+      if( avahi.simple_poll_iterate( _poll, timeout ) != 0 )
       {
         if( ++nErrors < 10 )
           continue;
@@ -205,7 +343,7 @@ public:
   {
     ScopedLock lock( _mutex );
     if( _browser )
-      avahi_service_browser_free( _browser );
+      avahi.service_browser_free( _browser );
     _browser = 0;
   }
 
@@ -254,16 +392,16 @@ private:
         break;
 
       case AVAHI_CLIENT_FAILURE:
-        _result = avahi_client_errno( _client );
-        WARN << "Client failure: " << avahi_strerror( _result )
+        _result = avahi.client_errno( _client );
+        WARN << "Client failure: " << avahi.strerror( _result )
              << std::endl;
-        avahi_simple_poll_quit( _poll );
+        avahi.simple_poll_quit( _poll );
         break;
 
       case AVAHI_CLIENT_S_COLLISION:
         // Can't setup client
         _result = EEXIST;
-        avahi_simple_poll_quit( _poll );
+        avahi.simple_poll_quit( _poll );
         break;
 
       case AVAHI_CLIENT_S_REGISTERING:
@@ -299,10 +437,10 @@ private:
     {
       case AVAHI_BROWSER_FAILURE:
       {
-        _result = avahi_client_errno( _client );
-        WARN << "Browser failure: " << avahi_strerror( _result )
+        _result = avahi.client_errno( _client );
+        WARN << "Browser failure: " << avahi.strerror( _result )
              << std::endl;
-        avahi_simple_poll_quit( _poll );
+        avahi.simple_poll_quit( _poll );
         break;
       }
 
@@ -311,15 +449,15 @@ private:
         // We ignore the returned resolver object. In the callback function
         // we free it. If the server is terminated before the callback
         // function is called the server will free the resolver for us.
-        if( !avahi_service_resolver_new( _client, ifIndex, protocol, name,
+        if( !avahi.service_resolver_new( _client, ifIndex, protocol, name,
                                          type, domain, AVAHI_PROTO_UNSPEC,
                                          (AvahiLookupFlags)(0),
                                          _resolveCBS, this ))
         {
-          _result = avahi_client_errno( _client );
+          _result = avahi.client_errno( _client );
           WARN << "Error creating resolver: "
-               << avahi_strerror( _result ) << std::endl;
-          avahi_simple_poll_quit( _poll );
+               << avahi.strerror( _result ) << std::endl;
+          avahi.simple_poll_quit( _poll );
         }
         break;
       }
@@ -367,8 +505,8 @@ private:
     switch( event )
     {
       case AVAHI_RESOLVER_FAILURE:
-        _result = avahi_client_errno( _client );
-        WARN << "Resolver error: " << avahi_strerror( _result )
+        _result = avahi.client_errno( _client );
+        WARN << "Resolver error: " << avahi.strerror( _result )
              << std::endl;
         break;
 
@@ -414,7 +552,7 @@ private:
       } break;
     }
 
-    avahi_service_resolver_free( resolver );
+    avahi.service_resolver_free( resolver );
   }
 
   void _updateRecord() final override
@@ -423,42 +561,42 @@ private:
       return;
 
     if( _group )
-      avahi_entry_group_reset( _group );
+      avahi.entry_group_reset( _group );
     _createServices();
   }
 
   void _createServices()
   {
     if( !_group )
-      _group = avahi_entry_group_new( _client, _groupCBS, this );
+      _group = avahi.entry_group_new( _client, _groupCBS, this );
     else
-      avahi_entry_group_reset( _group );
+      avahi.entry_group_reset( _group );
 
     if( !_group )
       return;
 
     AvahiStringList* data = 0;
     for( detail::ValueMapCIter i = _data.begin(); i != _data.end(); ++i )
-      data = avahi_string_list_add_pair( data, i->first.c_str(),
+      data = avahi.string_list_add_pair( data, i->first.c_str(),
                                          i->second.c_str( ));
 
-    _result = avahi_entry_group_add_service_strlst(
+    _result = avahi.entry_group_add_service_strlst(
           _group, AVAHI_IF_UNSPEC, AVAHI_PROTO_UNSPEC,
           (AvahiPublishFlags)(0), _announce.c_str(), _name.c_str(), 0, 0,
           _port, data );
 
     if( data )
-      avahi_string_list_free( data );
+      avahi.string_list_free( data );
 
     if( _result != servus::Result::SUCCESS )
     {
-      avahi_simple_poll_quit( _poll );
+      avahi.simple_poll_quit( _poll );
       return;
     }
 
-    _result = avahi_entry_group_commit( _group );
+    _result = avahi.entry_group_commit( _group );
     if( _result != servus::Result::SUCCESS )
-      avahi_simple_poll_quit( _poll );
+      avahi.simple_poll_quit( _poll );
   }
 
   static void _groupCBS( AvahiEntryGroup*, AvahiEntryGroupState state,
@@ -477,7 +615,7 @@ private:
       case AVAHI_ENTRY_GROUP_COLLISION:
       case AVAHI_ENTRY_GROUP_FAILURE:
         _result = EEXIST;
-        avahi_simple_poll_quit( _poll );
+        avahi.simple_poll_quit( _poll );
         break;
 
       case AVAHI_ENTRY_GROUP_UNCOMMITED:

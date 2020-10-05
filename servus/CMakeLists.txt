@@ -92,7 +92,7 @@ endif()
 
 if(Avahi_FOUND)
   target_include_directories(Servus_iface INTERFACE ${Avahi_CLIENT_INCLUDE_DIRS})
-  target_link_libraries(Servus_iface INTERFACE ${Avahi_LIBRARIES})
+  target_link_libraries(Servus_iface INTERFACE ${CMAKE_DL_LIBS})
   target_compile_definitions(Servus_iface INTERFACE SERVUS_USE_AVAHI_CLIENT)
 endif()
 
