@@ -28,6 +28,7 @@
 #include <stdexcept>
 
 #include <cassert>
+#include <sstream>
 #include <mutex>
 
 #include <dlfcn.h>
@@ -65,6 +66,12 @@ public:
   explicit dylib_loader(const char* const so)
   {
     impl = dlopen(so, RTLD_LAZY | RTLD_LOCAL | RTLD_NODELETE);
+    if(!impl)
+    {
+      std::stringstream err;
+      err << so << ": not found. Functionality may be reduced.";
+      throw std::runtime_error(err.str());
+    }
   }
 
   dylib_loader(const dylib_loader&) noexcept = delete;
