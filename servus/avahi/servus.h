@@ -148,7 +148,7 @@ private:
   dylib_loader library;
 
   libavahi()
-    : library("libavahi-client.so")
+    : library("libavahi-client.so.3")
   {
     strerror = library.symbol<decltype(&::avahi_strerror)>("avahi_strerror");
 
