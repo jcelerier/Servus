@@ -57,8 +57,6 @@ namespace servus
 {
 namespace avahi
 {
-namespace
-{
 
 class dylib_loader
 {
@@ -200,13 +198,13 @@ private:
   }
 };
 
-
+static inline
 AvahiSimplePoll* _newSimplePoll()
 {
   ScopedLock lock( _mutex );
   return libavahi::instance().simple_poll_new();
 }
-}
+
 
 class Servus final : public detail::Servus
 {
