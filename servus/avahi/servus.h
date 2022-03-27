@@ -235,6 +235,26 @@ public:
           avahi.strerror( error ));
   }
 
+
+  static bool checkSystemServiceRunning()
+  {
+      try {
+          // Check that we can load the DLL
+          libavahi::instance();
+
+          // Check that the avahi pid is active
+          auto f = fopen("/run/avahi-daemon/pid", "r");
+          if(!f)
+              return false;
+          fclose(f);
+          return true;
+      } catch(...)
+      {
+          return false;
+      }
+      return false;
+  }
+
   virtual ~Servus()
   {
     withdraw();

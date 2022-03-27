@@ -35,7 +35,9 @@
 
 namespace servus
 {
-namespace detail { class Servus; }
+namespace detail {
+class Servus;
+}
 
 /**
  * Simple wrapper for ZeroConf key/value pairs.
@@ -46,7 +48,7 @@ namespace detail { class Servus; }
  * zeroconf support (@sa isAvailable()), this class does not do anything useful.
  *
  * Example: @include tests/servus.cpp
- */ 
+ */
 class Servus
 {
 public:
@@ -61,10 +63,25 @@ public:
     /** @return true if a usable implementation is available. */
     static constexpr bool isAvailable()
     {
-    #if defined(SERVUS_USE_DNSSD) || defined(SERVUS_USE_AVAHI_CLIENT)
+#if SERVUS_USE_DNSSD
         return true;
-    #endif
+#elif SERVUS_USE_AVAHI_CLIENT
+        return true;
+#else
         return false;
+#endif
+    }
+
+    static detail::Servus* init(const std::string& name)
+    {
+#if SERVUS_USE_DNSSD
+        if(dnssd::Servus::checkSystemServiceRunning())
+            return new dnssd::Servus( name );
+#elif SERVUS_USE_AVAHI_CLIENT
+        if(avahi::Servus::checkSystemServiceRunning())
+            return new avahi::Servus( name );
+#endif
+        return new none::Servus( name );
     }
 
     /**
@@ -74,13 +91,7 @@ public:
      * @version 1.1
      */
     explicit Servus( const std::string& name )
-#ifdef SERVUS_USE_DNSSD
-    : _impl( new dnssd::Servus( name ))
-#elif defined(SERVUS_USE_AVAHI_CLIENT)
-    : _impl( new avahi::Servus( name ))
-#else
-    : _impl( new none::Servus( name ))
-#endif
+        : _impl{init(name)}
    {
    }
 

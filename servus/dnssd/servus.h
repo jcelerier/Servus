@@ -48,6 +48,15 @@ public:
         endBrowsing();
     }
 
+    static bool checkSystemServiceRunning()
+    {
+#if defined(__APPLE__)
+        return true;
+#elif defined(_WIN32)
+#endif
+        return true;
+    }
+
     std::string getClassName() const { return "dnssd"; }
 
     servus::Result announce( const unsigned short port,
