@@ -53,6 +53,32 @@ public:
 #if defined(__APPLE__)
         return true;
 #elif defined(_WIN32)
+        // Adapted from https://gist.github.com/the-nose-knows/607dba810fa7fc1db761e4f0ad1fe464
+        SC_HANDLE scm = OpenSCManager(nullptr, SERVICES_ACTIVE_DATABASE, SC_MANAGER_CONNECT);
+        if (scm == nullptr)
+            return false;
+        LPCWSTR lpServiceName = L"Bonjour Service";
+
+        SC_HANDLE hService = OpenService(scm, lpServiceName, GENERIC_READ);
+        if (hService == nullptr)
+        {
+          CloseServiceHandle(scm);
+          return false;
+        }
+
+        SERVICE_STATUS status{};
+        LPSERVICE_STATUS pstatus = &status;
+        if (QueryServiceStatus(hService, pstatus) == 0)
+        {
+          CloseServiceHandle(hService);
+          CloseServiceHandle(scm);
+          return false;
+        }
+
+        CloseServiceHandle(hService);
+        CloseServiceHandle(scm);
+
+        return status.dwCurrentState == SERVICE_RUNNING;
 #endif
         return true;
     }
