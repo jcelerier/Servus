@@ -57,9 +57,8 @@ public:
         SC_HANDLE scm = OpenSCManager(nullptr, SERVICES_ACTIVE_DATABASE, SC_MANAGER_CONNECT);
         if (scm == nullptr)
             return false;
-        LPCWSTR lpServiceName = L"Bonjour Service";
 
-        SC_HANDLE hService = OpenService(scm, lpServiceName, GENERIC_READ);
+        SC_HANDLE hService = OpenServiceW(scm, L"Bonjour Service", GENERIC_READ);
         if (hService == nullptr)
         {
           CloseServiceHandle(scm);
