@@ -228,13 +228,17 @@ private:
         if( !service )
             return servus::Result( kDNSServiceErr_Unknown );
 
-        const int fd = DNSServiceRefSockFD( service );
-        const int nfds = fd + 1;
-
+        const auto fd = DNSServiceRefSockFD( service );
+        const auto nfds = fd + 1;
+#if defined(_WIN32)
+        assert( fd != INVALID_SOCKET );
+        if( fd == INVALID_SOCKET )
+            return servus::Result( kDNSServiceErr_BadParam );
+#else
         assert( fd >= 0 );
         if( fd < 0 )
             return servus::Result( kDNSServiceErr_BadParam );
-
+#endif
         while( _result == servus::Result::PENDING )
         {
             fd_set fdSet;
