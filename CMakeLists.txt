@@ -36,11 +36,16 @@ elseif(WIN32)
   endif()
 endif()
 
-find_package(Qt5 5.6 QUIET COMPONENTS Core)
+if(NOT QT_VERSION)
+  set(QT_VERSION Qt5 5.6)
+endif()
+list(GET QT_VERSION 0 QT_PREFIX)
+
+find_package(${QT_VERSION} QUIET COMPONENTS Core)
 find_package(Threads REQUIRED)
 
-if(Qt5Core_FOUND)
-  set(SERVUS_DEPENDENT_LIBRARIES Qt5Core)
+if(${QT_PREFIX}Core_FOUND)
+  set(SERVUS_DEPENDENT_LIBRARIES ${QT_PREFIX}Core)
 endif()
 
 add_subdirectory(servus)
