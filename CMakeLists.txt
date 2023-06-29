@@ -37,7 +37,7 @@ elseif(WIN32)
 endif()
 
 if(NOT QT_VERSION)
-  set(QT_VERSION Qt5 5.6)
+  set(QT_VERSION Qt6 6.4)
 endif()
 list(GET QT_VERSION 0 QT_PREFIX)
 
