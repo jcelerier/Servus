@@ -17,9 +17,13 @@
  */
 
 #ifndef _WIN32
-#  include <arpa/inet.h>
-#  include <sys/time.h>
-#  include <unistd.h>
+#include <arpa/inet.h>
+#include <sys/time.h>
+
+#include <poll.h>
+#include <unistd.h>
+#else
+#include <winsock2.h>
 #endif
 #include <dns_sd.h>
 
@@ -222,78 +226,120 @@ private:
         }
     }
 
-    servus::Result _handleEvents( DNSServiceRef service,
-                                          const int32_t timeout = -1 )
+#if defined(_WIN32)
+    servus::Result _handleEvents(DNSServiceRef service, const int32_t timeout = -1)
     {
         if( !service )
             return servus::Result( kDNSServiceErr_Unknown );
 
         const auto fd = DNSServiceRefSockFD( service );
         const auto nfds = fd + 1;
-#if defined(_WIN32)
         assert( fd != INVALID_SOCKET );
         if( fd == INVALID_SOCKET )
-            return servus::Result( kDNSServiceErr_BadParam );
-#else
-        assert( fd >= 0 );
-        if( fd < 0 )
-            return servus::Result( kDNSServiceErr_BadParam );
-#endif
-        while( _result == servus::Result::PENDING )
+            return servus::Result(kDNSServiceErr_BadParam);
+
+        WSAPOLLFD fds;
+        fds.fd = fd;
+        fds.events = POLLIN;
+
+        while(_result == servus::Servus::Result::PENDING)
         {
-            fd_set fdSet;
-            FD_ZERO( &fdSet );
-            FD_SET( fd, &fdSet );
-
-            struct timeval tv;
-            tv.tv_sec = timeout / 1000;
-            tv.tv_usec = (timeout % 1000) * 1000;
-
-            const int result = ::select( nfds, &fdSet, 0, 0,
-                                         timeout < 0 ? 0 : &tv );
-            switch( result )
+            const int result = WSAPoll(&fds, 1, timeout);
+            switch(result)
             {
               case 0: // timeout
                 _result = kDNSServiceErr_NoError;
                 break;
 
               case -1: // error
-                WARN << "Select error: " << strerror( errno ) << " (" << errno
-                     << ")" << std::endl;
-                if( errno != EINTR )
+                WARN << "WSAPoll error: " << WSAGetLastError() << std::endl;
+                if(WSAGetLastError() != WSAEINTR)
                 {
-                    withdraw();
-                    _result = errno;
+                  withdraw();
+                  _result = WSAGetLastError();
                 }
                 break;
 
               default:
-                if( FD_ISSET( fd, &fdSet ))
+                if(fds.revents & POLLIN)
                 {
-                    const DNSServiceErrorType error =
-                        DNSServiceProcessResult( service );
+                  const DNSServiceErrorType error = DNSServiceProcessResult(service);
 
-                    if( error != kDNSServiceErr_NoError )
-                    {
-                        WARN << "DNSServiceProcessResult error: " << error
-                             << std::endl;
-                        withdraw();
-                        _result = error;
-                    }
+                  if(error != kDNSServiceErr_NoError)
+                  {
+                    WARN << "DNSServiceProcessResult error: " << error << std::endl;
+                    withdraw();
+                    _result = error;
+                  }
                 }
                 break;
             }
         }
 
-        const servus::Result result( _result );
+        const servus::Result result(_result);
         _result = servus::Result::PENDING; // reset for next operation
         return result;
     }
+#else
+    servus::Result _handleEvents(DNSServiceRef service, const int32_t timeout = -1)
+    {
+        if(!service)
+            return servus::Result(kDNSServiceErr_Unknown);
 
-    static void DNSSD_API registerCBS_( DNSServiceRef, DNSServiceFlags,
-                              DNSServiceErrorType error, const char* name,
-                              const char* type, const char* domain,
-                              Servus* servus )
+        const auto fd = DNSServiceRefSockFD(service);
+        const auto nfds = fd + 1;
+        assert(fd >= 0);
+        if(fd < 0)
+            return servus::Result(kDNSServiceErr_BadParam);
+
+        struct pollfd fds;
+        fds.fd = fd;
+        fds.events = POLLIN;
+
+        while(_result == servus::Result::PENDING)
+        {
+            const int result = poll(&fds, 1, timeout);
+            switch(result)
+            {
+              case 0: // timeout
+                _result = kDNSServiceErr_NoError;
+                break;
+
+              case -1: // error
+                WARN << "Poll error: " << strerror(errno) << " (" << errno << ")"
+                     << std::endl;
+                if(errno != EINTR)
+                {
+                  withdraw();
+                  _result = errno;
+                }
+                break;
+
+              default:
+                if(fds.revents & POLLIN)
+                {
+                  const DNSServiceErrorType error = DNSServiceProcessResult(service);
+
+                  if(error != kDNSServiceErr_NoError)
+                  {
+                    WARN << "DNSServiceProcessResult error: " << error << std::endl;
+                    withdraw();
+                    _result = error;
+                  }
+                }
+                break;
+            }
+        }
+
+        const servus::Result result(_result);
+        _result = servus::Result::PENDING; // reset for next operation
+        return result;
+    }
+#endif
+
+    static void DNSSD_API registerCBS_(
+        DNSServiceRef, DNSServiceFlags, DNSServiceErrorType error, const char* name,
+        const char* type, const char* domain, Servus* servus)
     {
         servus->registerCB_( name, type, domain, error );
     }
