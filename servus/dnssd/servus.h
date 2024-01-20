@@ -242,7 +242,7 @@ private:
         fds.fd = fd;
         fds.events = POLLIN;
 
-        while(_result == servus::Servus::Result::PENDING)
+        while(_result == servus::Result::PENDING)
         {
             const int result = WSAPoll(&fds, 1, timeout);
             switch(result)
