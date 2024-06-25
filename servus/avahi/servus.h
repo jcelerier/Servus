@@ -41,7 +41,7 @@ namespace chrono = std::chrono;
 //   Proper way of doing this is using the threaded polling in avahi
 namespace
 {
-static std::mutex _mutex;
+inline std::mutex _mutex;
 
 int64_t _elapsedMilliseconds(
     const chrono::high_resolution_clock::time_point& startTime )
